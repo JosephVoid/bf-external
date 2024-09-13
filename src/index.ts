@@ -14,7 +14,6 @@ app.use(express.json());
 // Route to accept a query and send the request
 app.get("/search", async (req: Request, res: Response) => {
   const query = req.query.q as string;
-  const id = req.query.uuid as string;
 
   if (!query) {
     return res.status(400).json({ message: "Query parameter 'q' is required" });
@@ -34,52 +33,53 @@ app.get("/search", async (req: Request, res: Response) => {
 
     const cleanedRes = formatClean(parsedRes);
 
-    amqp.connect(`amqp://${process.env.RBT_MQ}`, function (error0, connection) {
-      if (error0) {
-        throw error0;
-      }
-      connection.createChannel(function (error1, channel) {
-        if (error1) {
-          throw error1;
+    amqp.connect(
+      `amqp://${process.env.MQ_USR}:${process.env.MQ_PSS}@${process.env.RBT_MQ}`,
+      function (error0, connection) {
+        if (error0) {
+          throw error0;
         }
+        connection.createChannel(function (error1, channel) {
+          if (error1) {
+            throw error1;
+          }
 
-        channel.assertQueue(`${process.env.QUEUE}`, {
-          durable: false,
-        });
-
-        cleanedRes.slice(0, 5).forEach((ad) => {
-          // Send to Queue
-          channel.sendToQueue(
-            `${process.env.QUEUE}`,
-            Buffer.from(
-              `{"to": "${
-                ad.user
-              }", "message": "Hello, we noticed you posted '${truncate(
-                ad.title,
-                32
-              )}' on jiji. Someone wants it at www.buyersfirst.et/${id}"}`
-            )
-          );
-          // Log to file for potential reuse
-          fs.appendFile(
-            "user.log",
-            `${ad.title} -- ${ad.user} -- Br ${ad.price} -- ${ad.category}\n`,
-            (err) => {
-              if (err) {
-                console.error(err);
-              } else {
-                console.log("Success");
+          cleanedRes.slice(0, 5).forEach((ad) => {
+            // Send to Queue
+            channel.sendToQueue(
+              `${process.env.QUEUE}`,
+              Buffer.from(
+                `{"to": "${
+                  ad.user
+                }", "message": "Hello from Buyers First, you posted '${truncate(
+                  ad.title,
+                  32
+                )}' on jiji. We found someone who wants it, check it at www.buyersfirst.et"}`
+              )
+            );
+            // Log to file for potential reuse
+            fs.appendFile(
+              "user.log",
+              `${query} -- ${ad.title} -- ${ad.user} -- Br ${ad.price} -- ${ad.category}\n`,
+              (err) => {
+                if (err) {
+                  console.error(err);
+                } else {
+                  console.log(
+                    `${query} -- ${ad.title} -- ${ad.user} -- Br ${ad.price} -- ${ad.category}\n`
+                  );
+                }
               }
-            }
-          );
+            );
+          });
         });
-      });
-      setTimeout(function () {
-        connection.close();
-        process.exit(0);
-      }, 500);
-    });
+        setTimeout(function () {
+          connection.close();
+        }, 500);
+      }
+    );
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Error fetching data", error });
   }
 });
