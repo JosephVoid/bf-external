@@ -32,5 +32,5 @@ export function formatClean(data: ParsedResponse[]): ParsedResponse[] {
 }
 
 export function truncate(str: string, len: number): string {
-  return `${str.slice(0, len - 3)}...`;
+  return `${str.slice(0, len - 3)}${str.length > len ? "..." : ""}`;
 }
