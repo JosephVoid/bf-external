@@ -55,7 +55,7 @@ app.get("/search", async (req: Request, res: Response) => {
                 }", "message": "Hello we are BuyersFirst, and we saw you posted '${truncate(
                   ad.title,
                   45
-                )}' on jiji. We have found someone who wants it for ${price} Br. Go to our website www.buyersfirst.et to check it out!"}`
+                )}' on jiji. We have found someone who wants something similar for ${price} Br. Go to our website www.buyersfirst.et to check it out!"}`
               )
             );
             // Log to file for potential reuse
