@@ -14,7 +14,7 @@ app.use(express.json());
 // Route to accept a query and send the request
 app.get("/search", async (req: Request, res: Response) => {
   const query = req.query.q as string;
-  const id = req.query.id as string;
+  const price = req.query.price as string;
 
   if (!query) {
     return res.status(400).json({ message: "Query parameter 'q' is required" });
@@ -54,8 +54,8 @@ app.get("/search", async (req: Request, res: Response) => {
                   ad.user
                 }", "message": "Hello we are BuyersFirst, and we saw you posted '${truncate(
                   ad.title,
-                  40
-                )}' on jiji. We have found someone who may want it at our website here www.buyersfirst.et/${id}. Go ahead and check it out!"}`
+                  45
+                )}' on jiji. We have found someone who wants it for ${price} Br. Go to our website www.buyersfirst.et to check it out!"}`
               )
             );
             // Log to file for potential reuse
